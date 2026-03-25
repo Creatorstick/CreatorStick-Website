@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Database
+creatorstick.db
+creatorstick.db-wal
+creatorstick.db-shm
