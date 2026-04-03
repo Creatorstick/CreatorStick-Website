@@ -15,12 +15,17 @@ export default function ScrollReveal({
   const ref = useRef(null);
   const isInView = useInView(ref, { once, amount });
 
+  // Smaller offsets keep painting within a tighter area — critical for mobile perf.
+  // We read matchMedia directly (no hook needed — value only needed at render time).
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches;
+  const offset = isMobile ? 30 : 60;
+
   const directions = {
-    up: { y: 60, x: 0 },
-    down: { y: -60, x: 0 },
-    left: { x: 60, y: 0 },
-    right: { x: -60, y: 0 },
-    none: { x: 0, y: 0 },
+    up:    { y: offset, x: 0 },
+    down:  { y: -offset, x: 0 },
+    left:  { x: offset, y: 0 },
+    right: { x: -offset, y: 0 },
+    none:  { x: 0, y: 0 },
   };
 
   const { x, y } = directions[direction] || directions.up;
@@ -36,6 +41,8 @@ export default function ScrollReveal({
         delay,
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
+      // Hint the browser to create a GPU compositing layer for this element
+      style={{ willChange: 'transform, opacity' }}
     >
       {children}
     </motion.div>

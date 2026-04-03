@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, useInView, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,6 +8,19 @@ import ScrollReveal from './components/ScrollReveal';
 import ParallaxText, { ParallaxMarquee } from './components/ParallaxText';
 import AnimatedCounter from './components/AnimatedCounter';
 import MagneticButton from './components/MagneticButton';
+
+// Detect mobile once on the client so we can skip heavy scroll-driven transforms
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)');
+    setIsMobile(mq.matches);
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return isMobile;
+}
 
 /* ─── ALL 8 SERVICES ─── */
 const services = [
@@ -95,24 +108,35 @@ const portfolioCategories = [
 ];
 
 export default function Home() {
+  const isMobile = useIsMobile();
+
   const heroRef = useRef(null);
   const { scrollYProgress: heroScrollProgress } = useScroll({
     target: heroRef,
     offset: ['start start', 'end start'],
   });
-  
-  const heroY = useTransform(heroScrollProgress, [0, 1], [0, 200]);
-  const heroOpacity = useTransform(heroScrollProgress, [0, 0.8], [1, 0]);
-  const heroScale = useTransform(heroScrollProgress, [0, 1], [1, 0.9]);
+
+  // On mobile, scroll-driven transforms run on the JS thread every tick and cause
+  // jank — keep them but return static values so framer skips the interpolation.
+  const heroYRaw = useTransform(heroScrollProgress, [0, 1], [0, 200]);
+  const heroOpacityRaw = useTransform(heroScrollProgress, [0, 0.8], [1, 0]);
+  const heroScaleRaw = useTransform(heroScrollProgress, [0, 1], [1, 0.9]);
+
+  const heroY       = isMobile ? 0       : heroYRaw;
+  const heroOpacity = isMobile ? 1       : heroOpacityRaw;
+  const heroScale   = isMobile ? 1       : heroScaleRaw;
 
   const scrollFrameRef = useRef(null);
   const { scrollYProgress: frameProgress } = useScroll({
     target: scrollFrameRef,
     offset: ['start end', 'end start'],
   });
-  
-  const frameScale = useTransform(frameProgress, [0, 0.5, 1], [0.8, 1, 0.8]);
-  const frameRotate = useTransform(frameProgress, [0, 1], [-5, 5]);
+
+  const frameScaleRaw  = useTransform(frameProgress, [0, 0.5, 1], [0.8, 1, 0.8]);
+  const frameRotateRaw = useTransform(frameProgress, [0, 1], [-5, 5]);
+
+  const frameScale  = isMobile ? 1 : frameScaleRaw;
+  const frameRotate = isMobile ? 0 : frameRotateRaw;
 
   return (
     <div className="relative">
@@ -121,27 +145,34 @@ export default function Home() {
         {/* Background Grid */}
         <div className="absolute inset-0 grid-pattern" />
         
-        {/* Animated Gradient Orbs */}
-        <motion.div
-          animate={{
-            x: [0, 100, -50, 0],
-            y: [0, -80, 50, 0],
-            scale: [1, 1.2, 0.9, 1],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-          className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-orange/10 rounded-full blur-[120px]"
-        />
-        <motion.div
-          animate={{
-            x: [0, -80, 60, 0],
-            y: [0, 60, -40, 0],
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-          className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-orange/5 rounded-full blur-[100px]"
-        />
+        {/* Animated Gradient Orbs
+             Desktop: JS-driven keyframe movement (GPU-composited with will-change)
+             Mobile: static position — blur + continuous paint is too expensive on low-end GPUs */}
+        {!isMobile ? (
+          <>
+            <motion.div
+              animate={{ x: [0, 100, -50, 0], y: [0, -80, 50, 0], scale: [1, 1.2, 0.9, 1] }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+              style={{ willChange: 'transform' }}
+              className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-orange/10 rounded-full blur-[120px]"
+            />
+            <motion.div
+              animate={{ x: [0, -80, 60, 0], y: [0, 60, -40, 0] }}
+              transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+              style={{ willChange: 'transform' }}
+              className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-orange/5 rounded-full blur-[100px]"
+            />
+          </>
+        ) : (
+          <>
+            {/* Static orbs on mobile — same visual, zero JS animation cost */}
+            <div className="absolute top-1/4 right-1/4 w-[300px] h-[300px] bg-orange/10 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute bottom-1/4 left-1/4 w-[200px] h-[200px] bg-orange/5 rounded-full blur-[60px] pointer-events-none" />
+          </>
+        )}
 
         <motion.div
-          style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+          style={{ y: heroY, opacity: heroOpacity, scale: heroScale, willChange: 'transform, opacity' }}
           className="relative z-10 max-w-7xl mx-auto px-6 text-center flex flex-col items-center justify-center flex-1"
         >
           {/* Badge */}
