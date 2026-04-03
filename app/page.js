@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, useInView } from 'framer-motion';
+import { useRef, useState } from 'react';
+import { motion, useScroll, useTransform, useSpring, useInView, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import ScrollReveal from './components/ScrollReveal';
 import ParallaxText, { ParallaxMarquee } from './components/ParallaxText';
@@ -79,7 +79,17 @@ const testimonials = [
   },
 ];
 
+const portfolioProjects = [
+  { src: '/work/interior-1.png', title: 'Luxury Living Room', category: 'Interior Shoots', client: 'HomeVista Interiors', desc: 'Premium residential interior photography showcasing modern luxury living spaces.', span: 'lg:row-span-2' },
+  { src: '/work/fashion-1.png', title: 'Urban Edge Collection', category: 'Fashion', client: 'Velour Studios', desc: 'High-end editorial campaign with cinematic lighting and bold aesthetics.', span: '' },
+  { src: '/work/realestate-1.png', title: 'Sunset Villa Estate', category: 'Real Estate', client: 'Prestige Properties', desc: 'Golden hour exterior shoot for a luxury villa listing with pool and landscape.', span: '' },
+  { src: '/work/fashion-2.png', title: 'Golden Hour Lookbook', category: 'Fashion', client: 'AuraWear', desc: 'Rooftop fashion lookbook with golden hour lighting and premium color grading.', span: '' },
+  { src: '/work/realestate-2.png', title: 'Skyline Penthouse', category: 'Real Estate', client: 'Luxe Realty Group', desc: 'Interior and exterior photography for a premium penthouse with panoramic city views.', span: '' },
+  { src: '/work/interior-2.png', title: 'Designer Kitchen Suite', category: 'Interior Shoots', client: 'ArchLine Designs', desc: 'Architectural photography of a high-end kitchen with custom cabinetry and marble.', span: '' },
+];
+
 export default function Home() {
+  const [activeCategory, setActiveCategory] = useState('All');
   const heroRef = useRef(null);
   const { scrollYProgress: heroScrollProgress } = useScroll({
     target: heroRef,
@@ -141,33 +151,33 @@ export default function Home() {
           </motion.div>
 
           {/* Hero Heading */}
-          <div className="overflow-hidden py-1">
+          <div className="overflow-hidden pt-1 pb-8 -mb-7">
             <motion.h1
-              initial={{ y: 100 }}
+              initial={{ y: 150 }}
               animate={{ y: 0 }}
               transition={{ duration: 1, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-montserrat leading-[0.95] tracking-tight"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-montserrat leading-[0.95] tracking-tight pb-[0.2em] -mb-[0.2em]"
               style={{ color: 'var(--heading)' }}
             >
               We Create
             </motion.h1>
           </div>
-          <div className="overflow-hidden py-1">
+          <div className="overflow-hidden pt-1 pb-8 -mb-7">
             <motion.h1
-              initial={{ y: 100 }}
+              initial={{ y: 150 }}
               animate={{ y: 0 }}
               transition={{ duration: 1, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-montserrat leading-[0.95] tracking-tight gradient-text"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-montserrat leading-[0.95] tracking-tight gradient-text pb-[0.2em] -mb-[0.2em]"
             >
               Digital Impact
             </motion.h1>
           </div>
-          <div className="overflow-hidden py-1 mb-4">
+          <div className="overflow-hidden pt-1 pb-8 -mb-3">
             <motion.h1
-              initial={{ y: 100 }}
+              initial={{ y: 150 }}
               animate={{ y: 0 }}
               transition={{ duration: 1, delay: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-montserrat leading-[0.95] tracking-tight"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-montserrat leading-[0.95] tracking-tight pb-[0.2em] -mb-[0.2em]"
               style={{ color: 'var(--text-subtle)' }}
             >
               That Lasts
@@ -418,15 +428,16 @@ export default function Home() {
           {/* Category Pills */}
           <ScrollReveal>
             <div className="flex flex-wrap items-center justify-center gap-3 mb-14">
-              {['All', 'Interior Shoots', 'Fashion', 'Real Estate'].map((cat, i) => (
+              {['All', 'Interior Shoots', 'Fashion', 'Real Estate'].map((cat) => (
                 <span
                   key={cat}
+                  onClick={() => setActiveCategory(cat)}
                   className={`px-6 py-2.5 rounded-full text-sm font-medium cursor-pointer transition-all duration-300 ${
-                    i === 0
+                    activeCategory === cat
                       ? 'bg-orange text-white'
                       : ''
                   }`}
-                  style={i !== 0 ? { color: 'var(--muted)', border: '1px solid var(--border)', background: 'var(--glass-light-bg)' } : { color: '#ffffff' }}
+                  style={activeCategory !== cat ? { color: 'var(--muted)', border: '1px solid var(--border)', background: 'var(--glass-light-bg)' } : { color: '#ffffff' }}
                 >
                   {cat}
                 </span>
@@ -435,60 +446,16 @@ export default function Home() {
           </ScrollReveal>
 
           {/* Portfolio Grid — Masonry style */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              {
-                src: '/work/interior-1.png',
-                title: 'Luxury Living Room',
-                category: 'Interior Shoots',
-                client: 'HomeVista Interiors',
-                desc: 'Premium residential interior photography showcasing modern luxury living spaces.',
-                span: 'lg:row-span-2',
-              },
-              {
-                src: '/work/fashion-1.png',
-                title: 'Urban Edge Collection',
-                category: 'Fashion',
-                client: 'Velour Studios',
-                desc: 'High-end editorial campaign with cinematic lighting and bold aesthetics.',
-                span: '',
-              },
-              {
-                src: '/work/realestate-1.png',
-                title: 'Sunset Villa Estate',
-                category: 'Real Estate',
-                client: 'Prestige Properties',
-                desc: 'Golden hour exterior shoot for a luxury villa listing with pool and landscape.',
-                span: '',
-              },
-              {
-                src: '/work/fashion-2.png',
-                title: 'Golden Hour Lookbook',
-                category: 'Fashion',
-                client: 'AuraWear',
-                desc: 'Rooftop fashion lookbook with golden hour lighting and premium color grading.',
-                span: '',
-              },
-              {
-                src: '/work/realestate-2.png',
-                title: 'Skyline Penthouse',
-                category: 'Real Estate',
-                client: 'Luxe Realty Group',
-                desc: 'Interior and exterior photography for a premium penthouse with panoramic city views.',
-                span: '',
-              },
-              {
-                src: '/work/interior-2.png',
-                title: 'Designer Kitchen Suite',
-                category: 'Interior Shoots',
-                client: 'ArchLine Designs',
-                desc: 'Architectural photography of a high-end kitchen with custom cabinetry and marble.',
-                span: '',
-              },
-            ].map((project, i) => (
-              <ScrollReveal key={i} delay={i * 0.1}>
-                <motion.div
-                  whileHover={{ y: -6 }}
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <AnimatePresence mode="popLayout">
+              {portfolioProjects.filter(p => activeCategory === 'All' || p.category === activeCategory).map((project, i) => (
+                <ScrollReveal key={project.title} delay={i * 0.1}>
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    whileHover={{ y: -6 }}
                   className={`group relative overflow-hidden rounded-2xl cursor-pointer ${project.span}`}
                   style={{ border: '1px solid var(--border)' }}
                 >
@@ -540,7 +507,8 @@ export default function Home() {
                 </motion.div>
               </ScrollReveal>
             ))}
-          </div>
+            </AnimatePresence>
+          </motion.div>
 
           {/* View More CTA */}
           <ScrollReveal>
@@ -558,17 +526,17 @@ export default function Home() {
         </div>
       </section>
       <section className="py-20 relative overflow-hidden">
-        <ParallaxText speed={-0.3} className="text-center">
+        <ParallaxText speed={-0.3} axis="x" className="text-center">
           <h2 className="text-6xl md:text-8xl lg:text-[10rem] font-bold font-montserrat uppercase tracking-tight leading-none" style={{ color: 'var(--text-subtle)' }}>
             Strategy
           </h2>
         </ParallaxText>
-        <ParallaxText speed={0.3} className="text-center -mt-8">
+        <ParallaxText speed={0.3} axis="x" className="text-center -mt-8">
           <h2 className="text-6xl md:text-8xl lg:text-[10rem] font-bold font-montserrat gradient-text uppercase tracking-tight leading-none">
             Creativity
           </h2>
         </ParallaxText>
-        <ParallaxText speed={-0.2} className="text-center -mt-8">
+        <ParallaxText speed={-0.2} axis="x" className="text-center -mt-8">
           <h2 className="text-6xl md:text-8xl lg:text-[10rem] font-bold font-montserrat uppercase tracking-tight leading-none" style={{ color: 'var(--text-subtle)' }}>
             Results
           </h2>
@@ -663,12 +631,11 @@ export default function Home() {
             </div>
           </ScrollReveal>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { title: 'For Brands', desc: 'Strategic partnerships and campaigns that amplify your brand presence.', href: '/for-brands', icon: '◆' },
               { title: 'For Creators', desc: 'Grow your influence with premium brand collaborations and support.', href: '/for-creators', icon: '▲' },
               { title: 'Small Business', desc: 'Affordable, impactful marketing solutions tailored to your budget.', href: '/for-small-business', icon: '●' },
-              { title: 'Corporate', desc: 'Enterprise-grade media solutions for large-scale operations.', href: '/corporate', icon: '■' },
             ].map((item, i) => (
               <ScrollReveal key={i} delay={i * 0.1}>
                 <Link href={item.href} className="block group">
